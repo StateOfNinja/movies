@@ -179,6 +179,7 @@ export default class App extends Component {
         });
       })
       .catch((e) => {
+        this.setState({ loading: false, found: true });
         console.log(e.message);
       });
   };
@@ -202,6 +203,7 @@ export default class App extends Component {
         });
       })
       .catch((e) => {
+        this.setState({ loading: false, found: true });
         console.log(e.message);
       });
   };
