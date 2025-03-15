@@ -1,14 +1,13 @@
-import React, { Component } from "react";
+import { Component } from 'react';
 
-import "./moviesList.css";
-import { Consumer } from "../context/context";
+import './moviesList.css';
 
-import MovieItem from "../movieItem/movieItem";
+import { Consumer } from '../context/context';
+import MovieItem from '../movieItem/movieItem';
 
 export default class MoviesList extends Component {
   render() {
-    const { moviesData, sessionId, saveRatedMovie, deleteRatedMovie } =
-      this.props;
+    const { moviesData, sessionId, saveRatedMovie, deleteRatedMovie } = this.props;
 
     return (
       <ul className="movie-list">
@@ -28,6 +27,7 @@ export default class MoviesList extends Component {
                   genresList={genresList}
                   sessionId={sessionId}
                   saveRatedMovie={saveRatedMovie}
+                  stars={item.stars}
                   deleteRatedMovie={deleteRatedMovie}
                 />
               );

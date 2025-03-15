@@ -1,20 +1,14 @@
-import { Component } from "react";
-import { Input } from "antd";
-import debounce from "lodash.debounce";
+import debounce from 'lodash.debounce';
+import { Component } from 'react';
+import { Input } from 'antd';
 
 export default class SearchInput extends Component {
   onSearch = (e) => {
-    const { searchQuery } = this.props;
     const searchValue = e.target.value.trim();
-    searchQuery(searchValue);
+    this.props.searchQuery(searchValue);
   };
 
   render() {
-    return (
-      <Input
-        placeholder="Type to search..."
-        onChange={debounce(this.onSearch, 500)}
-      />
-    );
+    return <Input placeholder="Type to search..." onChange={debounce(this.onSearch, 500)} />;
   }
 }

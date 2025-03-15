@@ -1,9 +1,8 @@
-import React from "react";
-import { Rate, Tag } from "antd";
+import { Rate, Tag } from 'antd';
 
-import MovieDB from "../api/movieDB";
+import MovieDB from '../../api/movieDB';
 
-import "./movieItem.css";
+import './movieItem.css';
 
 function MovieItem({
   id,
@@ -16,6 +15,7 @@ function MovieItem({
   genresList,
   sessionId,
   saveRatedMovie,
+  stars,
   deleteRatedMovie,
 }) {
   const movieDB = new MovieDB();
@@ -23,32 +23,31 @@ function MovieItem({
     if (text.length <= maxLength) {
       return text;
     }
-    return text.slice(0, text.lastIndexOf(" ", maxLength)) + "...";
+    return text.slice(0, text.lastIndexOf(' ', maxLength)) + '...';
   };
   const descriptionCropped = reductionDescription(description);
 
   const genres = genresList.filter((item) => genresIds.includes(item.id));
 
   const changeRatedMovie = (rate) => {
-    movieDB.addRatingMovie(id, rate, sessionId);
-    saveRatedMovie(id, rate);
+    if (rate === 0) {
+      movieDB.deleteRatingMovie(id, sessionId);
+      deleteRatedMovie(id);
+    } else {
+      movieDB.addRatingMovie(id, rate, sessionId);
+      saveRatedMovie(id, rate);
+    }
   };
 
-  const deleteRated = (rate) => {
-    movieDB.deleteRatingMovie(id, sessionId);
-    deleteRatedMovie(id);
-    rate = 0;
-  };
-
-  let classNameRate = "movie-card__estimation";
+  let classNameRate = 'movie-card__estimation';
   if (rate < 3) {
-    classNameRate += " bad";
+    classNameRate += ' bad';
   } else if (rate < 5) {
-    classNameRate += " middle";
+    classNameRate += ' middle';
   } else if (rate < 7) {
-    classNameRate += " good";
+    classNameRate += ' good';
   } else if (rate >= 7) {
-    classNameRate += " perfect";
+    classNameRate += ' perfect';
   }
 
   return (
@@ -67,11 +66,7 @@ function MovieItem({
         </p>
         <p className="movie-card__description">{descriptionCropped}</p>
         <div className="movie-card__rate">
-          <Rate count={10} onChange={changeRatedMovie} />
-          <button
-            className="movie-card__rate-delete"
-            onClick={deleteRated}
-          ></button>
+          <Rate count={10} defaultValue={stars} onChange={changeRatedMovie} />
         </div>
       </div>
     </li>

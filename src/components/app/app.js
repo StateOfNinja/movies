@@ -1,46 +1,48 @@
-import React, { Component } from "react";
-import { format } from "date-fns";
-import { LoadingOutlined } from "@ant-design/icons";
-import { Pagination, Flex, Spin, Alert, Empty } from "antd";
-import { Provider } from "../context/context";
+import { Component } from 'react';
+import { format } from 'date-fns';
+import { LoadingOutlined } from '@ant-design/icons';
+import { Pagination, Flex, Spin, Alert, Empty } from 'antd';
 
-import "./app.css";
+import './app.css';
 
-import SearchInput from "../searchInput/searchInput";
-import MovieList from "../moviesList/moviesList";
-import Pages from "../pages/pages";
-import MovieDB from "../api/movieDB";
+import { Provider } from '../context/context';
+import SearchInput from '../searchInput/searchInput';
+import MovieList from '../moviesList/moviesList';
+import Tabs from '../tabs/tabs';
+import MovieDB from '../../api/movieDB';
 
-import noImg from "./no-image.jpg";
+import noImg from './no-image.jpg';
 
 export default class App extends Component {
   state = {
     currentPages: 1,
     totalPages: 0,
-    queryValue: "",
+    queryValue: '',
     movies: [],
     loading: false,
     error: false,
     found: false,
-    tab: "search",
+    tab: 'search',
     genresList: [],
-    sessionId: "",
+    sessionId: '',
     moviesRated: [],
   };
 
   movieDB = new MovieDB();
 
   componentDidMount = () => {
-    this.getPopularMovies(this.state.currentPages);
-    this.getGenres();
-    this.createSessionId();
+    if (!this.mounted) {
+      this.mounted = true;
+      this.createSessionId();
+      this.getGenres();
+      this.getPopularMovies(this.state.currentPages);
+    }
   };
 
   createSessionId = () => {
     this.movieDB
       .createGuestSession()
       .then((sessionId) => {
-        console.log(sessionId);
         this.setState({ sessionId: sessionId });
       })
       .catch((e) => {
@@ -52,20 +54,18 @@ export default class App extends Component {
     const newRateMovie = { id, rate };
 
     this.setState(({ moviesRated }) => {
-      const newMoviesRated = moviesRated
-        .filter((movie) => movie.id !== id)
-        .concat(newRateMovie);
-      console.log(newMoviesRated);
+      const newMoviesRated = moviesRated.filter((movie) => movie.id !== id).concat(newRateMovie);
+
       return {
         moviesRated: newMoviesRated,
       };
     });
   };
 
-  deleteRatedMovie = (id, rate) => {
+  deleteRatedMovie = (id) => {
     this.setState(({ moviesRated }) => {
       const newMoviesRated = moviesRated.filter((movie) => movie.id !== id);
-      console.log(newMoviesRated);
+
       return {
         moviesRated: newMoviesRated,
       };
@@ -84,9 +84,7 @@ export default class App extends Component {
   };
 
   searchQuery = (query) => {
-    this.setState({ queryValue: query, currentPages: 1 }, () =>
-      this.searchMoviesQuery()
-    );
+    this.setState({ queryValue: query, currentPages: 1 }, () => this.searchMoviesQuery());
   };
 
   searchMoviesQuery = () => {
@@ -104,7 +102,6 @@ export default class App extends Component {
       this.movieDB
         .searchMovies(queryValue, currentPages)
         .then((movies) => {
-          console.log(movies);
           this.setState({
             loading: false,
             totalPages: movies.total_pages,
@@ -137,14 +134,20 @@ export default class App extends Component {
 
   createItem = (movie) => {
     const movieId = movie.id;
-    const title = movie.original_title || "ZOV";
-    const releaseData = movie.release_date
-      ? format(new Date(movie.release_date), "MMMM d, y")
-      : "ZOV";
+    const title = movie.original_title || 'ZOV';
+    const releaseData = movie.release_date ? format(new Date(movie.release_date), 'MMMM d, y') : 'ZOV';
     const genresIds = movie.genre_ids;
-    const description = movie.overview || "ZOV";
+    const description = movie.overview || 'ZOV';
     const rate = movie.vote_average.toFixed(1);
     let posterUrl = `${noImg}`;
+
+    let stars = 0;
+
+    this.state.moviesRated.map((item) => {
+      if (item.id === movie.id) {
+        stars = item.rate;
+      }
+    });
 
     if (movie.poster_path) {
       posterUrl = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
@@ -158,6 +161,7 @@ export default class App extends Component {
       description,
       rate,
       posterUrl,
+      stars,
     };
   };
 
@@ -179,32 +183,66 @@ export default class App extends Component {
       });
   };
 
+  getRatedMovies = () => {
+    const { currentPages, sessionId } = this.state;
+    this.setState({ loading: true, totalPages: 0, movies: [] });
+    this.movieDB
+      .getRatedMovies(currentPages, sessionId)
+      .then((movies) => {
+        this.setState({ loading: false, totalPages: movies.total_pages });
+
+        const movieList = movies.results;
+
+        if (movieList.length === 0) {
+          this.setState({ loading: false, found: true });
+        }
+
+        movieList.forEach((movie) => {
+          this.addItem(movie);
+        });
+      })
+      .catch((e) => {
+        console.log(e.message);
+      });
+  };
+
+  changeTabs = (key) => {
+    if (key === 'search') {
+      this.setState(
+        {
+          tab: 'search',
+          currentPages: 1,
+          found: false,
+          movies: [],
+        },
+        () => this.getPopularMovies()
+      );
+    } else if (key === 'rated') {
+      this.setState(
+        {
+          tab: 'rated',
+          currentPages: 1,
+          found: false,
+          movies: [],
+        },
+        () => this.getRatedMovies()
+      );
+    }
+  };
+
   changePages = (page) => {
     this.setState({ currentPages: page }, () => {
-      this.searchMoviesQuery(this.state.queryValue, this.state.currentPages);
+      this.searchMoviesQuery();
     });
   };
 
   render() {
-    const {
-      movies,
-      loading,
-      error,
-      currentPages,
-      totalPages,
-      tab,
-      found,
-      sessionId,
-      moviesRated,
-    } = this.state;
-    const searchInput =
-      tab === "search" ? <SearchInput searchQuery={this.searchQuery} /> : null;
+    const { movies, loading, error, currentPages, totalPages, tab, found, sessionId } = this.state;
+    const searchInput = tab === 'search' ? <SearchInput searchQuery={this.searchQuery} /> : null;
 
     const hasData = !(loading || error || found);
 
-    const spinner = loading ? (
-      <Spin indicator={<LoadingOutlined spin />} size="large" />
-    ) : null;
+    const spinner = loading ? <Spin indicator={<LoadingOutlined spin />} size="large" /> : null;
 
     const errorMessage = error ? (
       <Alert
@@ -239,13 +277,11 @@ export default class App extends Component {
     return (
       <div className="container">
         <Flex vertical align="center">
-          <Pages />
+          <Tabs changeTabs={this.changeTabs} />
           {searchInput}
           {spinner}
           {errorMessage}
-          <Provider value={{ genresList: this.state.genresList }}>
-            {content}
-          </Provider>
+          <Provider value={{ genresList: this.state.genresList }}>{content}</Provider>
           {pagination}
         </Flex>
       </div>

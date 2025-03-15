@@ -1,13 +1,13 @@
 export default class MovieDB {
-  baseUrl = "https://api.themoviedb.org/3";
-  apiKey = "acf4c9b3ac2e0b6f9f95e7e9721b3d23";
+  baseUrl = 'https://api.themoviedb.org/3';
+  apiKey = 'acf4c9b3ac2e0b6f9f95e7e9721b3d23';
   apiToken =
-    "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhY2Y0YzliM2FjMmUwYjZmOWY5NWU3ZTk3MjFiM2QyMyIsIm5iZiI6MTc0MDg0Nzk3OS43Mjg5OTk5LCJzdWIiOiI2N2MzM2I2YjU3M2JlYjE1MmY2NmMzMGIiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.mFfwEHTkCHP9am9c3EdChysCXYARAKF8CYllTloScgQ";
+    'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhY2Y0YzliM2FjMmUwYjZmOWY5NWU3ZTk3MjFiM2QyMyIsIm5iZiI6MTc0MDg0Nzk3OS43Mjg5OTk5LCJzdWIiOiI2N2MzM2I2YjU3M2JlYjE1MmY2NmMzMGIiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.mFfwEHTkCHP9am9c3EdChysCXYARAKF8CYllTloScgQ';
 
   options = {
-    method: "GET",
+    method: 'GET',
     headers: {
-      accept: "application/json",
+      accept: 'application/json',
       Authorization: this.apiToken,
     },
   };
@@ -31,7 +31,7 @@ export default class MovieDB {
   }
 
   async createGuestSession() {
-    const url = "/authentication/guest_session/new";
+    const url = '/authentication/guest_session/new';
     const body = await this.getResponse(url);
     return body.guest_session_id;
   }
@@ -39,10 +39,10 @@ export default class MovieDB {
   async addRatingMovie(movieId, rate, sessionId) {
     const url = `${this.baseUrl}/movie/${movieId}/rating?guest_session_id=${sessionId}`;
     const options = {
-      method: "POST",
+      method: 'POST',
       headers: {
-        accept: "application/json",
-        "Content-Type": "application/json;charset=utf-8",
+        accept: 'application/json',
+        'Content-Type': 'application/json;charset=utf-8',
         Authorization: this.apiToken,
       },
       body: JSON.stringify({ value: rate }),
@@ -65,10 +65,10 @@ export default class MovieDB {
     const url = `${this.baseUrl}/movie/${movieId}/rating?guest_session_id=${sessionId}`;
 
     const options = {
-      method: "DELETE",
+      method: 'DELETE',
       headers: {
-        accept: "application/json",
-        "Content-Type": "application/json;charset=utf-8",
+        accept: 'application/json',
+        'Content-Type': 'application/json;charset=utf-8',
         Authorization: this.apiToken,
       },
     };
@@ -97,7 +97,7 @@ export default class MovieDB {
   }
 
   async getGenres() {
-    const url = `/genre/movie/list?language=en`;
+    const url = '/genre/movie/list?language=en';
     const genresList = await this.getResponse(url);
     return genresList.genres;
   }
