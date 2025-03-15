@@ -94,6 +94,7 @@ export default class App extends Component {
       movies: [],
       loading: true,
       totalPages: 0,
+      found: false,
     });
 
     if (queryValue.length === 0) {
@@ -172,6 +173,7 @@ export default class App extends Component {
         this.setState({
           loading: false,
           totalPages: movies.total_pages,
+          found: false,
         });
         const movieList = movies.results;
         movieList.forEach((movie) => {
